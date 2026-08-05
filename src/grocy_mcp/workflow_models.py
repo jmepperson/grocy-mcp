@@ -29,7 +29,7 @@ class WorkflowNormalizedInputItem(BaseModel):
     barcode: str | None = None
     note: str | None = None
     price: float | None = None
-    store: str | None = None
+    store: str | int | None = None
 
     model_config = {"extra": "forbid"}
 
@@ -55,10 +55,15 @@ class WorkflowNormalizedInputItem(BaseModel):
             raise ValueError("price must not be negative")
         return value
 
-    @field_validator("unit_text", "barcode", "note", "store")
+    @field_validator("unit_text", "barcode", "note")
     @classmethod
     def normalize_optional_fields(cls, value: str | None) -> str | None:
         return _normalize_optional_text(value)
+
+    @field_validator("store")
+    @classmethod
+    def normalize_store(cls, value: str | int | None) -> str | int | None:
+        return _normalize_optional_text(value) if isinstance(value, str) else value
 
 
 class WorkflowMatchPreviewItem(BaseModel):
@@ -71,7 +76,7 @@ class WorkflowMatchPreviewItem(BaseModel):
     suggested_amount: float
     unit_text: str | None = None
     price: float | None = None
-    store: str | None = None
+    store: str | int | None = None
 
     model_config = {"extra": "forbid"}
 
@@ -80,8 +85,8 @@ class WorkflowApplyItem(BaseModel):
     product_id: int
     amount: float
     price: float | None = None
-    location: str | None = None
-    store: str | None = None
+    location: str | int | None = None
+    store: str | int | None = None
     best_before_date: str | None = None
     purchased_date: str | None = None
     note: str | None = None
@@ -102,10 +107,15 @@ class WorkflowApplyItem(BaseModel):
             raise ValueError("price must not be negative")
         return value
 
-    @field_validator("location", "store", "best_before_date", "purchased_date", "note")
+    @field_validator("best_before_date", "purchased_date", "note")
     @classmethod
     def normalize_optional_fields(cls, value: str | None) -> str | None:
         return _normalize_optional_text(value)
+
+    @field_validator("location", "store")
+    @classmethod
+    def normalize_identifier_fields(cls, value: str | int | None) -> str | int | None:
+        return _normalize_optional_text(value) if isinstance(value, str) else value
 
 
 class WorkflowShoppingReconcilePreviewAction(BaseModel):

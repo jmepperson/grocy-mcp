@@ -86,6 +86,15 @@ async def test_stock_add_with_price_and_location(mock_client):
         assert "Fridge" in result
 
 
+async def test_stock_add_accepts_int_location_and_store(mock_client):
+    """Regression: an agent passing back numeric IDs (JSON ints, not strings)
+    from locations_list_tool/stores_list_tool must not be rejected."""
+    with patch("grocy_mcp.core.stock.resolve_product", return_value=1):
+        await stock_add(mock_client, "Milk", 2.0, location=4, store=2)
+
+    mock_client.add_stock.assert_called_once_with(1, 2.0, location_id=4, shopping_location_id=2)
+
+
 async def test_stock_consume(mock_client):
     with patch("grocy_mcp.core.stock.resolve_product", return_value=1):
         result = await stock_consume(mock_client, "Milk", 1.0)

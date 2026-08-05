@@ -26,6 +26,13 @@ async def test_resolve_by_numeric_id(mock_client):
     mock_client.get_objects.assert_not_called()
 
 
+async def test_resolve_by_int_id(mock_client):
+    """A bare int (e.g. an ID an agent just read from a list tool) resolves directly."""
+    result = await resolve_entity(mock_client, "products", 4)
+    assert result == 4
+    mock_client.get_objects.assert_not_called()
+
+
 async def test_resolve_exact_match(mock_client):
     result = await resolve_entity(mock_client, "products", "Milk")
     assert result == 1

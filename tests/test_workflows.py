@@ -133,6 +133,23 @@ async def test_workflow_stock_intake_apply_data_with_price_and_location():
     assert result["applied_items"][0]["price"] == 3.49
 
 
+async def test_workflow_stock_intake_apply_data_accepts_int_location_and_store():
+    """Regression: an agent passing back the numeric IDs it just read from
+    locations_list_tool/stores_list_tool (JSON ints, not strings) must not be
+    rejected by WorkflowApplyItem validation."""
+    client = AsyncMock()
+
+    result = await workflow_stock_intake_apply_data(
+        client,
+        [{"product_id": 12, "amount": 2, "location": 4, "store": 2}],
+    )
+
+    client.add_stock.assert_awaited_once_with(12, 2, location_id=4, shopping_location_id=2)
+    assert result["applied_items"][0]["location"] == 4
+    assert result["applied_items"][0]["store"] == 2
+    client.get_objects.assert_not_called()
+
+
 async def test_workflow_match_products_preview_carries_price_and_store():
     client = AsyncMock()
     client.get_objects.side_effect = [

@@ -9,9 +9,11 @@ from grocy_mcp.exceptions import GrocyResolveError
 async def resolve_entity(
     client: GrocyClient,
     entity: str,
-    name_or_id: str,
+    name_or_id: str | int,
     name_field: str = "name",
 ) -> int:
+    if isinstance(name_or_id, int):
+        return name_or_id
     if name_or_id.isdigit():
         return int(name_or_id)
 
@@ -52,11 +54,11 @@ async def resolve_chore(client: GrocyClient, name_or_id: str) -> int:
     return await resolve_entity(client, "chores", name_or_id)
 
 
-async def resolve_location(client: GrocyClient, name_or_id: str) -> int:
+async def resolve_location(client: GrocyClient, name_or_id: str | int) -> int:
     return await resolve_entity(client, "locations", name_or_id)
 
 
-async def resolve_store(client: GrocyClient, name_or_id: str) -> int:
+async def resolve_store(client: GrocyClient, name_or_id: str | int) -> int:
     """Resolve a store name or ID (Grocy calls this entity 'shopping_locations')."""
     return await resolve_entity(client, "shopping_locations", name_or_id)
 
