@@ -1026,7 +1026,9 @@ def create_mcp_server() -> FastMCP:
         product IDs before applying stock changes.
 
         Args:
-            items: JSON array of normalized input items.
+            items: JSON array of normalized input items. Each item supports:
+                label (required), quantity, unit_text, barcode, note, price,
+                shopping_location.
         """
         parsed_items = _parse_json_arg(items, "items")
         async with _get_client() as client:
@@ -1040,7 +1042,12 @@ def create_mcp_server() -> FastMCP:
         but is named for the common \"I bought these groceries\" workflow.
 
         Args:
-            items: JSON array of normalized input items.
+            items: JSON array of normalized input items. Each item supports:
+                label (required), quantity, unit_text, barcode, note, price
+                (purchase price for this line), shopping_location (store/vendor
+                name, e.g. "Farmers Market"). price and shopping_location are
+                echoed back on the matching preview item so they can be carried
+                into workflow_stock_intake_apply_tool without re-extracting them.
         """
         parsed_items = _parse_json_arg(items, "items")
         async with _get_client() as client:
@@ -1051,10 +1058,17 @@ def create_mcp_server() -> FastMCP:
         """Apply confirmed stock additions using explicit Grocy product IDs.
 
         Apply only confirmed IDs from a prior preview step. This tool does not
-        resolve names implicitly.
+        resolve product names implicitly, but it does resolve location names.
 
         Args:
-            items: JSON array of confirmed apply items, each with product_id and amount.
+            items: JSON array of confirmed apply items. Each item supports:
+                product_id and amount (required), price (purchase price for
+                this line), location (storage location name or ID, e.g.
+                "Fridge"), shopping_location (store/vendor name or ID, e.g.
+                "Farmers Market"), best_before_date (YYYY-MM-DD),
+                purchased_date (YYYY-MM-DD, defaults to today), note. Recording
+                price and location builds up purchase history queryable later
+                via the stock journal.
         """
         parsed_items = _parse_json_arg(items, "items")
         async with _get_client() as client:

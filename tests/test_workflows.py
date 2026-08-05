@@ -1,6 +1,6 @@
 """Tests for workflow-oriented preview/apply helpers."""
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -94,9 +94,68 @@ async def test_workflow_stock_intake_apply_data():
         [{"product_id": 12, "amount": 2, "note": "organic"}],
     )
 
-    client.add_stock.assert_awaited_once_with(12, 2)
+    client.add_stock.assert_awaited_once_with(12, 2, note="organic")
     assert result["applied_count"] == 1
     assert result["applied_items"][0]["note"] == "organic"
+
+
+async def test_workflow_stock_intake_apply_data_with_price_and_location():
+    client = AsyncMock()
+
+    with (
+        patch("grocy_mcp.core.workflows.resolve_location", return_value=5) as mock_loc,
+        patch(
+            "grocy_mcp.core.workflows.resolve_shopping_location", return_value=9
+        ) as mock_shop_loc,
+    ):
+        result = await workflow_stock_intake_apply_data(
+            client,
+            [
+                {
+                    "product_id": 12,
+                    "amount": 2,
+                    "price": 3.49,
+                    "location": "Fridge",
+                    "shopping_location": "Farmers Market",
+                    "best_before_date": "2026-12-31",
+                }
+            ],
+        )
+
+    mock_loc.assert_awaited_once_with(client, "Fridge")
+    mock_shop_loc.assert_awaited_once_with(client, "Farmers Market")
+    client.add_stock.assert_awaited_once_with(
+        12,
+        2,
+        price=3.49,
+        location_id=5,
+        shopping_location_id=9,
+        best_before_date="2026-12-31",
+    )
+    assert result["applied_items"][0]["price"] == 3.49
+
+
+async def test_workflow_match_products_preview_carries_price_and_shopping_location():
+    client = AsyncMock()
+    client.get_objects.side_effect = [
+        [{"id": 1, "name": "Whole Milk"}],
+        [],
+    ]
+
+    result = await workflow_match_products_preview_data(
+        client,
+        [
+            {
+                "label": "whole milk",
+                "quantity": 1,
+                "price": 3.49,
+                "shopping_location": "Farmers Market",
+            }
+        ],
+    )
+
+    assert result[0]["price"] == 3.49
+    assert result[0]["shopping_location"] == "Farmers Market"
 
 
 async def test_workflow_shopping_reconcile_preview_data():
