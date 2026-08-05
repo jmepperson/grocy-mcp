@@ -27,6 +27,10 @@ async def test_stock_journal():
         ],
         # products
         [{"id": 1, "name": "Milk"}, {"id": 2, "name": "Bread"}],
+        # locations
+        [],
+        # shopping_locations
+        [],
     ]
     result = await stock_journal(client)
     assert "Milk" in result
@@ -35,9 +39,34 @@ async def test_stock_journal():
     assert "consume" in result
 
 
+async def test_stock_journal_shows_price_and_location():
+    client = AsyncMock()
+    client.get_objects.side_effect = [
+        [
+            {
+                "id": 1,
+                "product_id": 1,
+                "amount": 2,
+                "transaction_type": "purchase",
+                "row_created_timestamp": "2026-03-30 10:00:00",
+                "price": 3.49,
+                "location_id": 5,
+                "shopping_location_id": 9,
+            },
+        ],
+        [{"id": 1, "name": "Milk"}],
+        [{"id": 5, "name": "Fridge"}],
+        [{"id": 9, "name": "Farmers Market"}],
+    ]
+    result = await stock_journal(client)
+    assert "3.49" in result
+    assert "@ Fridge" in result
+    assert "from Farmers Market" in result
+
+
 async def test_stock_journal_empty():
     client = AsyncMock()
-    client.get_objects.side_effect = [[], []]
+    client.get_objects.side_effect = [[], [], [], []]
     result = await stock_journal(client)
     assert result == "No stock journal entries found."
 
@@ -62,6 +91,8 @@ async def test_stock_journal_filtered_by_product():
             },
         ],
         [{"id": 1, "name": "Milk"}, {"id": 2, "name": "Bread"}],
+        [],
+        [],
     ]
     with patch("grocy_mcp.core.stock_journal.resolve_product", return_value=1):
         result = await stock_journal(client, product="Milk")
@@ -82,6 +113,8 @@ async def test_stock_journal_filtered_no_results():
             },
         ],
         [{"id": 1, "name": "Milk"}, {"id": 2, "name": "Bread"}],
+        [],
+        [],
     ]
     with patch("grocy_mcp.core.stock_journal.resolve_product", return_value=1):
         result = await stock_journal(client, product="Milk")

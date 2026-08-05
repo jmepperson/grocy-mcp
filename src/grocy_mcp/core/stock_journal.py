@@ -12,9 +12,15 @@ async def stock_journal(client: GrocyClient, product: str | None = None) -> str:
     if not entries:
         return "No stock journal entries found."
 
-    # Build product name map
+    # Build product/location name maps
     products = await client.get_objects("products")
     product_map = {p["id"]: p.get("name", f"Product {p['id']}") for p in products}
+    locations = await client.get_objects("locations")
+    location_map = {loc["id"]: loc.get("name", f"Location {loc['id']}") for loc in locations}
+    shopping_locations = await client.get_objects("shopping_locations")
+    shopping_location_map = {
+        loc["id"]: loc.get("name", f"Shopping location {loc['id']}") for loc in shopping_locations
+    }
 
     # Filter by product if specified
     if product is not None:
@@ -33,6 +39,20 @@ async def stock_journal(client: GrocyClient, product: str | None = None) -> str:
         amount = entry.get("amount", "?")
         txn_type = entry.get("transaction_type", "?")
         timestamp = entry.get("row_created_timestamp", "?")
-        lines.append(f"  [{entry.get('id', '?')}] {prod_name} — {txn_type} {amount} — {timestamp}")
+        line = f"  [{entry.get('id', '?')}] {prod_name} — {txn_type} {amount} — {timestamp}"
+
+        price = entry.get("price")
+        if price is not None:
+            line += f" — {price:g}"
+
+        location_id = entry.get("location_id")
+        if location_id in location_map:
+            line += f" @ {location_map[location_id]}"
+
+        shopping_location_id = entry.get("shopping_location_id")
+        if shopping_location_id in shopping_location_map:
+            line += f" from {shopping_location_map[shopping_location_id]}"
+
+        lines.append(line)
 
     return "\n".join(lines)

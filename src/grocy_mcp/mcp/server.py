@@ -165,15 +165,43 @@ def create_mcp_server() -> FastMCP:
             return await stock_product_info(client, product)
 
     @mcp.tool()
-    async def stock_add_tool(product: str, amount: float) -> str:
+    async def stock_add_tool(
+        product: str,
+        amount: float,
+        price: float | None = None,
+        location: str | None = None,
+        shopping_location: str | None = None,
+        best_before_date: str | None = None,
+        purchased_date: str | None = None,
+        note: str | None = None,
+    ) -> str:
         """Add stock for a product (e.g. after a purchase).
+
+        Recording price and location builds up purchase history queryable
+        later via the stock journal.
 
         Args:
             product: Product name (e.g. "Milk") or numeric product ID.
             amount: Quantity to add (e.g. 2.0 for two units).
+            price: Purchase price paid for this amount (total, not per unit).
+            location: Storage location name (e.g. "Fridge") or numeric ID.
+            shopping_location: Store/vendor name (e.g. "Farmers Market") or numeric ID.
+            best_before_date: Best-before date in YYYY-MM-DD format.
+            purchased_date: Purchase date in YYYY-MM-DD format (defaults to today).
+            note: Free-text note about the purchase.
         """
         async with _get_client() as client:
-            return await stock_add(client, product, amount)
+            return await stock_add(
+                client,
+                product,
+                amount,
+                price=price,
+                location=location,
+                shopping_location=shopping_location,
+                best_before_date=best_before_date,
+                purchased_date=purchased_date,
+                note=note,
+            )
 
     @mcp.tool()
     async def stock_consume_tool(product: str, amount: float) -> str:

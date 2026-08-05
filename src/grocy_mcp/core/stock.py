@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from grocy_mcp.client import GrocyClient
-from grocy_mcp.core.resolve import resolve_location, resolve_product
+from grocy_mcp.core.resolve import resolve_location, resolve_product, resolve_shopping_location
 
 
 async def stock_overview(client: GrocyClient) -> str:
@@ -69,11 +69,38 @@ async def stock_product_info(client: GrocyClient, product: str) -> str:
     return f"Product: {name}\n  In stock: {amount}\n  Next best before: {best_before}"
 
 
-async def stock_add(client: GrocyClient, product: str, amount: float, **kwargs) -> str:
-    """Add stock for a product."""
+async def stock_add(
+    client: GrocyClient,
+    product: str,
+    amount: float,
+    price: float | None = None,
+    location: str | None = None,
+    shopping_location: str | None = None,
+    best_before_date: str | None = None,
+    purchased_date: str | None = None,
+    note: str | None = None,
+) -> str:
+    """Add stock for a product, optionally recording purchase price and location."""
     product_id = await resolve_product(client, product)
-    await client.add_stock(product_id, amount, **kwargs)
-    return f"Added {amount} of '{product}' to stock."
+    data: dict = {}
+    if price is not None:
+        data["price"] = price
+    if location is not None:
+        data["location_id"] = await resolve_location(client, location)
+    if shopping_location is not None:
+        data["shopping_location_id"] = await resolve_shopping_location(client, shopping_location)
+    if best_before_date is not None:
+        data["best_before_date"] = best_before_date
+    if purchased_date is not None:
+        data["purchased_date"] = purchased_date
+    if note is not None:
+        data["note"] = note
+
+    await client.add_stock(product_id, amount, **data)
+
+    detail = f" at {price:g}" if price is not None else ""
+    detail += f" ({location})" if location is not None else ""
+    return f"Added {amount} of '{product}' to stock{detail}."
 
 
 async def stock_consume(client: GrocyClient, product: str, amount: float, **kwargs) -> str:
