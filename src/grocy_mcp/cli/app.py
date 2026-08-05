@@ -97,6 +97,7 @@ from grocy_mcp.core.files import (
     print_stock_entry_label,
 )
 from grocy_mcp.core.locations import location_create, locations_list
+from grocy_mcp.core.stores import stores_list
 from grocy_mcp.core.meal_plan import (
     meal_plan_add,
     meal_plan_list,
@@ -142,6 +143,7 @@ shopping_app = typer.Typer(help="Shopping list commands.")
 recipes_app = typer.Typer(help="Recipe commands.")
 chores_app = typer.Typer(help="Chore commands.")
 locations_app = typer.Typer(help="Storage location commands.")
+stores_app = typer.Typer(help="Store (shopping location) commands.")
 tasks_app = typer.Typer(help="Task management commands.")
 meal_plan_app = typer.Typer(help="Meal plan commands.")
 catalog_app = typer.Typer(help="First-class catalog and metadata commands.")
@@ -160,6 +162,7 @@ app.add_typer(shopping_app, name="shopping")
 app.add_typer(recipes_app, name="recipes")
 app.add_typer(chores_app, name="chores")
 app.add_typer(locations_app, name="locations")
+app.add_typer(stores_app, name="stores")
 app.add_typer(tasks_app, name="tasks")
 app.add_typer(meal_plan_app, name="meal-plan")
 app.add_typer(catalog_app, name="catalog")
@@ -913,6 +916,28 @@ def cmd_location_create(
             return await location_create(client, name, freezer, description)
 
     _exec(_inner())
+
+
+# --------------------------------------------------------------------- Stores
+
+
+@stores_app.command("list")
+def cmd_stores_list() -> None:
+    """List all stores (Grocy calls this 'shopping locations')."""
+    if _output_json:
+
+        async def _inner():
+            async with _client() as client:
+                return await client.get_objects("shopping_locations")
+
+        _exec_json(_inner())
+    else:
+
+        async def _inner():
+            async with _client() as client:
+                return await stores_list(client)
+
+        _exec(_inner())
 
 
 # ------------------------------------------------------------- Stock Journal

@@ -84,6 +84,7 @@ from grocy_mcp.core.stock import (
     stock_transfer,
 )
 from grocy_mcp.core.locations import location_create, locations_list
+from grocy_mcp.core.stores import stores_list
 from grocy_mcp.core.meal_plan import (
     meal_plan_add,
     meal_plan_list,
@@ -615,6 +616,16 @@ def create_mcp_server() -> FastMCP:
         """
         async with _get_client() as client:
             return await location_create(client, name, is_freezer, description)
+
+    @mcp.tool()
+    async def stores_list_tool() -> str:
+        """List all stores in Grocy (where purchases are made).
+
+        Use this to find valid store names before passing them as the
+        'store' argument to stock_add_tool or the workflow intake tools.
+        """
+        async with _get_client() as client:
+            return await stores_list(client)
 
     # ---------------------------------------------------------- Stock Journal
 
