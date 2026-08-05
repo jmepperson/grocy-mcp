@@ -392,9 +392,7 @@ def cmd_stock_add(
     location: str | None = typer.Option(
         None, "--location", "-l", help="Storage location name or ID."
     ),
-    shopping_location: str | None = typer.Option(
-        None, "--shopping-location", help="Store/vendor name or ID."
-    ),
+    store: str | None = typer.Option(None, "--store", help="Store/vendor name or ID."),
     best_before_date: str | None = typer.Option(
         None, "--best-before-date", help="Best-before date (YYYY-MM-DD)."
     ),
@@ -413,7 +411,7 @@ def cmd_stock_add(
                 amount,
                 price=price,
                 location=location,
-                shopping_location=shopping_location,
+                store=store,
                 best_before_date=best_before_date,
                 purchased_date=purchased_date,
                 note=note,

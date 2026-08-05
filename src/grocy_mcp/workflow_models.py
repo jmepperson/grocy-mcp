@@ -29,7 +29,7 @@ class WorkflowNormalizedInputItem(BaseModel):
     barcode: str | None = None
     note: str | None = None
     price: float | None = None
-    shopping_location: str | None = None
+    store: str | None = None
 
     model_config = {"extra": "forbid"}
 
@@ -55,7 +55,7 @@ class WorkflowNormalizedInputItem(BaseModel):
             raise ValueError("price must not be negative")
         return value
 
-    @field_validator("unit_text", "barcode", "note", "shopping_location")
+    @field_validator("unit_text", "barcode", "note", "store")
     @classmethod
     def normalize_optional_fields(cls, value: str | None) -> str | None:
         return _normalize_optional_text(value)
@@ -71,7 +71,7 @@ class WorkflowMatchPreviewItem(BaseModel):
     suggested_amount: float
     unit_text: str | None = None
     price: float | None = None
-    shopping_location: str | None = None
+    store: str | None = None
 
     model_config = {"extra": "forbid"}
 
@@ -81,7 +81,7 @@ class WorkflowApplyItem(BaseModel):
     amount: float
     price: float | None = None
     location: str | None = None
-    shopping_location: str | None = None
+    store: str | None = None
     best_before_date: str | None = None
     purchased_date: str | None = None
     note: str | None = None
@@ -102,7 +102,7 @@ class WorkflowApplyItem(BaseModel):
             raise ValueError("price must not be negative")
         return value
 
-    @field_validator("location", "shopping_location", "best_before_date", "purchased_date", "note")
+    @field_validator("location", "store", "best_before_date", "purchased_date", "note")
     @classmethod
     def normalize_optional_fields(cls, value: str | None) -> str | None:
         return _normalize_optional_text(value)

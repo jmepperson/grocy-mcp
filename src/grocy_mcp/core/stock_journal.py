@@ -17,10 +17,8 @@ async def stock_journal(client: GrocyClient, product: str | None = None) -> str:
     product_map = {p["id"]: p.get("name", f"Product {p['id']}") for p in products}
     locations = await client.get_objects("locations")
     location_map = {loc["id"]: loc.get("name", f"Location {loc['id']}") for loc in locations}
-    shopping_locations = await client.get_objects("shopping_locations")
-    shopping_location_map = {
-        loc["id"]: loc.get("name", f"Shopping location {loc['id']}") for loc in shopping_locations
-    }
+    stores = await client.get_objects("shopping_locations")
+    store_map = {store["id"]: store.get("name", f"Store {store['id']}") for store in stores}
 
     # Filter by product if specified
     if product is not None:
@@ -50,8 +48,8 @@ async def stock_journal(client: GrocyClient, product: str | None = None) -> str:
             line += f" @ {location_map[location_id]}"
 
         shopping_location_id = entry.get("shopping_location_id")
-        if shopping_location_id in shopping_location_map:
-            line += f" from {shopping_location_map[shopping_location_id]}"
+        if shopping_location_id in store_map:
+            line += f" from {store_map[shopping_location_id]}"
 
         lines.append(line)
 

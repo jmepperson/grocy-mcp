@@ -104,9 +104,7 @@ async def test_workflow_stock_intake_apply_data_with_price_and_location():
 
     with (
         patch("grocy_mcp.core.workflows.resolve_location", return_value=5) as mock_loc,
-        patch(
-            "grocy_mcp.core.workflows.resolve_shopping_location", return_value=9
-        ) as mock_shop_loc,
+        patch("grocy_mcp.core.workflows.resolve_store", return_value=9) as mock_store,
     ):
         result = await workflow_stock_intake_apply_data(
             client,
@@ -116,14 +114,14 @@ async def test_workflow_stock_intake_apply_data_with_price_and_location():
                     "amount": 2,
                     "price": 3.49,
                     "location": "Fridge",
-                    "shopping_location": "Farmers Market",
+                    "store": "Farmers Market",
                     "best_before_date": "2026-12-31",
                 }
             ],
         )
 
     mock_loc.assert_awaited_once_with(client, "Fridge")
-    mock_shop_loc.assert_awaited_once_with(client, "Farmers Market")
+    mock_store.assert_awaited_once_with(client, "Farmers Market")
     client.add_stock.assert_awaited_once_with(
         12,
         2,
@@ -135,7 +133,7 @@ async def test_workflow_stock_intake_apply_data_with_price_and_location():
     assert result["applied_items"][0]["price"] == 3.49
 
 
-async def test_workflow_match_products_preview_carries_price_and_shopping_location():
+async def test_workflow_match_products_preview_carries_price_and_store():
     client = AsyncMock()
     client.get_objects.side_effect = [
         [{"id": 1, "name": "Whole Milk"}],
@@ -149,13 +147,13 @@ async def test_workflow_match_products_preview_carries_price_and_shopping_locati
                 "label": "whole milk",
                 "quantity": 1,
                 "price": 3.49,
-                "shopping_location": "Farmers Market",
+                "store": "Farmers Market",
             }
         ],
     )
 
     assert result[0]["price"] == 3.49
-    assert result[0]["shopping_location"] == "Farmers Market"
+    assert result[0]["store"] == "Farmers Market"
 
 
 async def test_workflow_shopping_reconcile_preview_data():

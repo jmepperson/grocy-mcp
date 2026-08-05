@@ -170,7 +170,7 @@ def create_mcp_server() -> FastMCP:
         amount: float,
         price: float | None = None,
         location: str | None = None,
-        shopping_location: str | None = None,
+        store: str | None = None,
         best_before_date: str | None = None,
         purchased_date: str | None = None,
         note: str | None = None,
@@ -185,7 +185,7 @@ def create_mcp_server() -> FastMCP:
             amount: Quantity to add (e.g. 2.0 for two units).
             price: Purchase price paid for this amount (total, not per unit).
             location: Storage location name (e.g. "Fridge") or numeric ID.
-            shopping_location: Store/vendor name (e.g. "Farmers Market") or numeric ID.
+            store: Store/vendor name (e.g. "Farmers Market") or numeric ID.
             best_before_date: Best-before date in YYYY-MM-DD format.
             purchased_date: Purchase date in YYYY-MM-DD format (defaults to today).
             note: Free-text note about the purchase.
@@ -197,7 +197,7 @@ def create_mcp_server() -> FastMCP:
                 amount,
                 price=price,
                 location=location,
-                shopping_location=shopping_location,
+                store=store,
                 best_before_date=best_before_date,
                 purchased_date=purchased_date,
                 note=note,
@@ -1028,7 +1028,7 @@ def create_mcp_server() -> FastMCP:
         Args:
             items: JSON array of normalized input items. Each item supports:
                 label (required), quantity, unit_text, barcode, note, price,
-                shopping_location.
+                store.
         """
         parsed_items = _parse_json_arg(items, "items")
         async with _get_client() as client:
@@ -1044,10 +1044,10 @@ def create_mcp_server() -> FastMCP:
         Args:
             items: JSON array of normalized input items. Each item supports:
                 label (required), quantity, unit_text, barcode, note, price
-                (purchase price for this line), shopping_location (store/vendor
-                name, e.g. "Farmers Market"). price and shopping_location are
-                echoed back on the matching preview item so they can be carried
-                into workflow_stock_intake_apply_tool without re-extracting them.
+                (purchase price for this line), store (store/vendor name, e.g.
+                "Farmers Market"). price and store are echoed back on the
+                matching preview item so they can be carried into
+                workflow_stock_intake_apply_tool without re-extracting them.
         """
         parsed_items = _parse_json_arg(items, "items")
         async with _get_client() as client:
@@ -1064,7 +1064,7 @@ def create_mcp_server() -> FastMCP:
             items: JSON array of confirmed apply items. Each item supports:
                 product_id and amount (required), price (purchase price for
                 this line), location (storage location name or ID, e.g.
-                "Fridge"), shopping_location (store/vendor name or ID, e.g.
+                "Fridge"), store (store/vendor name or ID, e.g.
                 "Farmers Market"), best_before_date (YYYY-MM-DD),
                 purchased_date (YYYY-MM-DD, defaults to today), note. Recording
                 price and location builds up purchase history queryable later

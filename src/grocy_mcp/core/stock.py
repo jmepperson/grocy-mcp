@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from grocy_mcp.client import GrocyClient
-from grocy_mcp.core.resolve import resolve_location, resolve_product, resolve_shopping_location
+from grocy_mcp.core.resolve import resolve_location, resolve_product, resolve_store
 
 
 async def stock_overview(client: GrocyClient) -> str:
@@ -75,7 +75,7 @@ async def stock_add(
     amount: float,
     price: float | None = None,
     location: str | None = None,
-    shopping_location: str | None = None,
+    store: str | None = None,
     best_before_date: str | None = None,
     purchased_date: str | None = None,
     note: str | None = None,
@@ -87,8 +87,8 @@ async def stock_add(
         data["price"] = price
     if location is not None:
         data["location_id"] = await resolve_location(client, location)
-    if shopping_location is not None:
-        data["shopping_location_id"] = await resolve_shopping_location(client, shopping_location)
+    if store is not None:
+        data["shopping_location_id"] = await resolve_store(client, store)
     if best_before_date is not None:
         data["best_before_date"] = best_before_date
     if purchased_date is not None:

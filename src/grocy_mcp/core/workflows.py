@@ -8,7 +8,7 @@ from typing import TypeVar
 from pydantic import BaseModel, ValidationError
 
 from grocy_mcp.client import GrocyClient
-from grocy_mcp.core.resolve import resolve_location, resolve_shopping_location
+from grocy_mcp.core.resolve import resolve_location, resolve_store
 from grocy_mcp.exceptions import GrocyValidationError
 from grocy_mcp.workflow_models import (
     WorkflowApplyItem,
@@ -151,7 +151,7 @@ async def workflow_match_products_preview_data(
                 suggested_amount=item.quantity,
                 unit_text=item.unit_text,
                 price=item.price,
-                shopping_location=item.shopping_location,
+                store=item.store,
             ).model_dump(exclude_none=True)
         )
 
@@ -215,7 +215,7 @@ async def workflow_stock_intake_preview(client: GrocyClient, items: list[dict] |
 async def workflow_stock_intake_apply_data(client: GrocyClient, items: list[dict] | object) -> dict:
     """Apply confirmed stock additions using explicit product IDs.
 
-    Optionally records purchase price, storage/shopping location, dates, and a
+    Optionally records purchase price, storage location, store, dates, and a
     note per item, so the addition contributes to purchase history.
     """
     parsed_items = _parse_model_list(items, WorkflowApplyItem, "items")
@@ -226,10 +226,8 @@ async def workflow_stock_intake_apply_data(client: GrocyClient, items: list[dict
             data["price"] = item.price
         if item.location is not None:
             data["location_id"] = await resolve_location(client, item.location)
-        if item.shopping_location is not None:
-            data["shopping_location_id"] = await resolve_shopping_location(
-                client, item.shopping_location
-            )
+        if item.store is not None:
+            data["shopping_location_id"] = await resolve_store(client, item.store)
         if item.best_before_date is not None:
             data["best_before_date"] = item.best_before_date
         if item.purchased_date is not None:

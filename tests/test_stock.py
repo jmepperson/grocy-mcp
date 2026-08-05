@@ -61,9 +61,7 @@ async def test_stock_add_with_price_and_location(mock_client):
     with (
         patch("grocy_mcp.core.stock.resolve_product", return_value=1),
         patch("grocy_mcp.core.stock.resolve_location", return_value=5) as mock_resolve_loc,
-        patch(
-            "grocy_mcp.core.stock.resolve_shopping_location", return_value=9
-        ) as mock_resolve_shop,
+        patch("grocy_mcp.core.stock.resolve_store", return_value=9) as mock_resolve_store,
     ):
         result = await stock_add(
             mock_client,
@@ -71,11 +69,11 @@ async def test_stock_add_with_price_and_location(mock_client):
             2.0,
             price=3.49,
             location="Fridge",
-            shopping_location="Farmers Market",
+            store="Farmers Market",
             best_before_date="2026-12-31",
         )
         mock_resolve_loc.assert_called_once_with(mock_client, "Fridge")
-        mock_resolve_shop.assert_called_once_with(mock_client, "Farmers Market")
+        mock_resolve_store.assert_called_once_with(mock_client, "Farmers Market")
         mock_client.add_stock.assert_called_once_with(
             1,
             2.0,
